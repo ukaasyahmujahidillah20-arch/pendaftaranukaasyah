@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Black Metal - Ukaasyah Muahidillah</title>
+    <!-- Mengambil font Metal dari Google Fonts (Membutuhkan koneksi internet) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Metal+Mania&family=Nosifer&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- CSS VARIABLES & RESET --- */
+        :root {
+            --bg-color: #050505;
+            --calc-bg: #111111;
+            --text-color: #c0c0c0;
+            --accent-red: #8a0303;
+            --accent-red-bright: #ff0000;
+            --border-color: #333333;
+            --shadow-color: rgba(0, 0, 0, 0.9);
+            --display-bg: #000000;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            /* Pola tekstur gelap/noise halus */
+            background-image: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%);
+            color: var(--text-color);
+            font-family: 'Metal Mania', cursive;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            user-select: none; /* Mencegah seleksi teks saat klik cepat */
+        }
+
+        /* --- HEADER & TYPOGRAPHY --- */
+        header {
+            margin-bottom: 20px;
+            text-align: center;
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #e0e0e0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px var(--accent-red), 0 0 20px #000;
+            border-bottom: 2px solid var(--accent-red);
+            display: inline-block;
+            padding-bottom: 10px;
+        }
+
+        .subtitle {
+            font-family: sans-serif;
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 5px;
+            letter-spacing: 1px;
+        }
+
+        /* --- CALCULATOR CONTAINER --- */
+        .calculator-container {
+            background-color: var(--calc-bg);
+            border: 4px solid var(--border-color);
+            border-radius: 4px; /* Sudut sedikit tajam */
+            padding: 20px;
+            box-shadow: 
+                0 0 20px var(--accent-red),
+                inset 0 0 50px #000;
+            width: 350px;
+            max-width: 95%;
+            position: relative;
+        }
+
+        /* Dekorasi sudut Gothic */
+        .calculator-container::before, .calculator-container::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--accent-red);
+            transition: all 0.3s ease;
+        }
+        .calculator-container::before { top: 10px; left: 10px; border-right: none; border-bottom: none; }
+        .calculator-container::after { bottom: 10px; right: 10px; border-left: none; border-top: none; }
+
+        /* --- DISPLAY SCREEN --- */
+        .display-screen {
+            background-color: var(--display-bg);
+            border: 2px solid #333;
+            color: var(--accent-red-bright);
+            font-family: 'Nosifer', cursive; /* Font horror untuk angka */
+            text-align: right;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 2px;
+            box-shadow: inset 0 0 10px #000;
+            overflow: hidden;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            position: relative;
+        }
+
+        .previous-operand {
+            font-family: 'Metal Mania', cursive;
+            color: #666;
+            font-size: 1rem;
+            min-height: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        .current-operand {
+            font-size: 2rem;
+            word-wrap: break-word;
+            word-break: break-all;
+            text-shadow: 0 0 5px var(--accent-red);
+        }
+
+        /* --- BUTTONS GRID --- */
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        button {
+            background: linear-gradient(145deg, #1a1a1a, #0d0d0d);
+            border: 1px solid #444;
+            color: #aaa;
+            font-family: 'Metal Mania', cursive;
+            font-size: 1.2rem;
+            padding: 15px;
+            cursor: pointer;
+            border-radius: 2px;
+            transition: all 0.1s ease;
+            text-shadow: 1px 1px 0 #000;
+            outline: none;
+        }
+
+        button:hover {
+            background-color: #222;
+            color: #fff;
+            border-color: var(--accent-red);
+            box-shadow: 0 0 8px var(--accent-red);
+        }
+
+        button:active {
+            transform: scale(0.95);
+            background-color: var(--accent-red);
+            color: #fff;
+        }
+
+        /* Tombol Operasi */
+        .btn-op {
+            color: var(--accent-red-bright);
+            font-weight: bold;
+        }
+
+        /* Tombol Equals */
+        .btn-equals {
+            grid-column: span 2;
+            background: linear-gradient(145deg, #2a0000, #000);
+            border-color: var(--accent-red);
+        }
+        .btn-equals:hover {
+            background: var(--accent-red);
+            box-shadow: 0 0 15px var(--accent-red-bright);
+        }
+
+        /* Tombol AC & DEL */
+        .btn-control {
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        /* --- FOOTER --- */
+        footer {
+            margin-top: 20px;
+            font-size: 0.7rem;
+            color: #444;
+        }
+
+        /* Responsif untuk layar sangat kecil */
+        @media (max-width: 400px) {
+            h1 { font-size: 1.8rem; }
+            .calculator-container { padding: 15px; width: 100%; border: none; }
+            button { padding: 10px; font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>ukaasyah muahidillah</h1>
+        <div class="subtitle">ONLINE BLACK METAL CALCULATOR</div>
+    </header>
+
+    <main>
+        <div class="calculator-container">
+            <div class="display-screen">
+                <div class="previous-operand" data-previous></div>
+                <div class="current-operand" data-current>0</div>
+            </div>
+            
+            <div class="buttons-grid">
+                <!-- Baris 1 -->
+                <button class="btn-control" data-action="clear">AC</button>
+                <button class="btn-control" data-action="delete">DEL</button>
+                <button class="btn-op" data-operation>÷</button>
+                <button class="btn-op" data-operation>×</button>
+                
+                <!-- Baris 2 -->
+                <button data-number>7</button>
+                <button data-number>8</button>
+                <button data-number>9</button>
+                <button class="btn-op" data-operation>-</button>
+                
+                <!-- Baris 3 -->
+                <button data-number>4</button>
+                <button data-number>5</button>
+                <button data-number>6</button>
+                <button class="btn-op" data-operation>+</button>
+                
+                <!-- Baris 4 -->
+                <button data-number>1</button>
+                <button data-number>2</button>
+                <button data-number>3</button>
+                <!-- Baris 5 (Start) -->
+                <button class="btn-equals" data-action="equals">=</button>
+                
+                <!-- Baris 5 (Lanjutan) -->
+                <button data-number>.</button>
+                <button data-number>0</button>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        &copy; 2023 Ukaasyah System. All Rights Reserved.
+    </footer>
+
+    <script>
+        /**
+         * Logika Kalkulator Black Metal
+         * Menangani perhitungan matematika dan interaksi Keyboard/Kursor
+         */
+
+        class Calculator {
+            constructor(previousOperandTextElement, currentOperandTextElement) {
+                this.previousOperandTextElement = previousOperandTextElement;
+                this.currentOperandTextElement = currentOperandTextElement;
+                this.clear();
+            }
+
+            clear() {
+                this.currentOperand = '0';
+                this.previousOperand = '';
+                this.operation = undefined;
+            }
+
+            delete() {
+                if (this.currentOperand === '0') return;
+                this.currentOperand = this.currentOperand.toString().slice(0, -1);
+                if (this.currentOperand === '') this.currentOperand = '0';
+            }
+
+            appendNumber(number) {
+                if (number === '.' && this.currentOperand.includes('.')) return;
+                if (this.currentOperand === '0' && number !== '.') {
+                    this.currentOperand = number.toString();
+                } else {
+                    this.currentOperand = this.currentOperand.toString() + number.toString();
+                }
+            }
+
+            chooseOperation(operation) {
+                if (this.currentOperand === '') return;
+                if (this.previousOperand !== '') {
+                    this.compute();
+                }
+                this.operation = operation;
+                this.previousOperand = this.currentOperand;
+                this.currentOperand = '';
+            }
+
+            compute() {
+                let computation;
+                const prev = parseFloat(this.previousOperand);
+                const current = parseFloat(this.currentOperand);
+                if (isNaN(prev) || isNaN(current)) return;
+                
+                switch (this.operation) {
+                    case '+':
+                        computation = prev + current;
+                        break;
+                    case '-':
+                        computation = prev - current;
+                        break;
+                    case '×':
+                        computation = prev * current;
+                        break;
+                    case '÷':
+                        if (current === 0) {
+                            alert("GELAP: Tidak bisa membagi dengan nihil.");
+                            this.clear();
+                            return;
+                        }
+                        computation = prev / current;
+                        break;
+                    default:
+                        return;
+                }
+                
+                this.currentOperand = computation;
+                this.operation = undefined;
+                this.previousOperand = '';
+            }
+
+            getDisplayNumber(number) {
+                const stringNumber = number.toString();
+                const integerDigits = parseFloat(stringNumber.split('.')[0]);
+                const decimalDigits = stringNumber.split('.')[1];
+                let integerDisplay;
+                if (isNaN(integerDigits)) {
+                    integerDisplay = '';
+                } else {
+                    integerDisplay = integerDigits.toLocaleString('id-ID', { maximumFractionDigits: 0 });
+                }
+                if (decimalDigits != null) {
+                    return `${integerDisplay}.${decimalDigits}`;
+                } else {
+                    return integerDisplay;
+                }
+            }
+
+            updateDisplay() {
+                this.currentOperandTextElement.innerText = this.getDisplayNumber(this.currentOperand);
+                if (this.operation != null) {
+                    this.previousOperandTextElement.innerText = 
+                        `${this.getDisplayNumber(this.previousOperand)} ${this.operation}`;
+                } else {
+                    this.previousOperandTextElement.innerText = '';
+                }
+            }
+        }
+
+        // --- Inisialisasi DOM ---
+        const numberButtons = document.querySelectorAll('[data-number]');
+        const operationButtons = document.querySelectorAll('[data-operation]');
+        const equalsButton = document.querySelector('[data-action="equals"]');
+        const deleteButton = document.querySelector('[data-action="delete"]');
+        const allClearButton = document.querySelector('[data-action="clear"]');
+        const previousOperandTextElement = document.querySelector('[data-previous]');
+        const currentOperandTextElement = document.querySelector('[data-current]');
+
+        const calculator = new Calculator(previousOperandTextElement, currentOperandTextElement);
+
+        // --- Event Listeners untuk Klik (Kursor) ---
+
+        numberButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                calculator.appendNumber(button.innerText);
+                calculator.updateDisplay();
+                playClickEffect(button);
+            });
+        });
+
+        operationButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                calculator.chooseOperation(button.innerText);
+                calculator.updateDisplay();
+                playClickEffect(button);
+            });
+        });
+
+        equalsButton.addEventListener('click', () => {
+            calculator.compute();
+            calculator.updateDisplay();
+            playClickEffect(equalsButton);
+        });
+
+        allClearButton.addEventListener('click', () => {
+            calculator.clear();
+            calculator.updateDisplay();
+            playClickEffect(allClearButton);
+        });
+
+        deleteButton.addEventListener('click', () => {
+            calculator.delete();
+            calculator.updateDisplay();
+            playClickEffect(deleteButton);
+        });
+
+        // Efek visual sederhana saat tombol ditekan
+        function playClickEffect(element) {
+            element.style.borderColor = '#ff0000';
+            setTimeout(() => {
+                element.style.borderColor = '';
+            }, 150);
+        }
+
+        // --- Event Listeners untuk Keyboard ---
+
+        document.addEventListener('keydown', (e) => {
+            let key = e.key;
+
+            // Mapping tombol keyboard
+            if ((key >= 0 && key <= 9) || key === '.') {
+                calculator.appendNumber(key);
+                highlightButtonByText(key);
+            } 
+            else if (key === '+' || key === '-') {
+                calculator.chooseOperation(key);
+                highlightButtonByText(key);
+            } 
+            else if (key === '*') {
+                calculator.chooseOperation('×');
+                highlightButtonByText('×');
+            } 
+            else if (key === '/') {
+                e.preventDefault(); // Mencegah fitur quick find browser
+                calculator.chooseOperation('÷');
+                highlightButtonByText('÷');
+            } 
+            else if (key === 'Enter' || key === '=') {
+                e.preventDefault();
+                calculator.compute();
+                highlightButtonByText('=');
+            } 
+            else if (key === 'Backspace') {
+                calculator.delete();
+                highlightButtonByAction('delete');
+            } 
+            else if (key === 'Escape') {
+                calculator.clear();
+                highlightButtonByAction('clear');
+            }
+
+            calculator.updateDisplay();
+        });
+
+        // Fungsi helper untuk memberikan efek visual pada tombol saat ditekan via keyboard
+        function highlightButtonByText(text) {
+            const buttons = Array.from(document.querySelectorAll('button'));
+            const btn = buttons.find(b => b.innerText === text);
+            if (btn) {
+                btn.click(); // Memicu efek klik
+                btn.focus(); // Agar screen reader membacanya
+            }
+        }
+
+        function highlightButtonByAction(action) {
+            const btn = document.querySelector(`[data-action="${action}"]`);
+            if (btn) {
+                btn.click();
+                btn.focus();
+            }
+        }
+
+    </script>
+</body>
+</html>
